@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 197d700ce176e004d8c317c46f6df3fc, type: 3}
+  m_Name: Revolver
+  m_EditorClassIdentifier: 
+  AmmunitionPrefab: {fileID: 3856228384228733671, guid: 76f81da63c486b74c93e50106c6548a7, type: 3}
+  FireCooldown: 0.5
+  ReloadTime: 3
+  ClipSize: 6
