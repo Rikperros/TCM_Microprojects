@@ -16,3 +16,6 @@ MonoBehaviour:
   FireCooldown: 0.5
   ReloadTime: 3
   ClipSize: 6
+  PrimaryWeaponModule: {fileID: 11400000, guid: 09dbdc80232ece84cafecb8e8ad84e5c, type: 2}
+  SecondaryWeaponModule: {fileID: 0}
+  AuxiliaryWeaponModule: {fileID: 11400000, guid: 3dae860118d1ea9458bcd3b22c110fb0, type: 2}

@@ -12,4 +12,10 @@ public class FireWeaponDefinition : ScriptableObject
     public float ReloadTime;
     [Tooltip("Max amount of bullets that can be shooted without reloading")]
     public int ClipSize;
+    [Tooltip("Shooting definition encapsulated in a module")]
+    public WeaponModuleBase PrimaryWeaponModule;
+    [Tooltip("aiming definition encapsulated in a module")]
+    public WeaponModuleBase SecondaryWeaponModule;
+    [Tooltip("reload definition encapsulated in a module")]
+    public WeaponModuleBase AuxiliaryWeaponModule;
 }

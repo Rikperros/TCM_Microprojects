@@ -14,13 +14,7 @@ public class FireWeaponComponent : MonoBehaviour
     string FireInputAxis = "Fire1";
 
     //Observer to handle reloading text in hud
-    public event Action<bool> OnReloadStateChanged;
-
-    //Here we only define the vars that we need to control the component logic
-    private float ElapsedFireCooldown = 0;
-    private float ElapsedReloadTime = 0;
-    private int remainingBullets = 0;
-    private bool bIsReloading = false;
+    public event Action<bool> OnReloadStateChanged;  
 
     void Awake()
     {
@@ -33,60 +27,31 @@ public class FireWeaponComponent : MonoBehaviour
             this.enabled = false;
             return;
         }
-        //if everything is fine se the weapon ready
-        ReloadWeapon();
+
+        SetUpWeaponModules();
     }
 
     void Update()
     {
-        //We always want to update the weapon fire cooldown
-        ElapsedFireCooldown += Time.deltaTime * Time.timeScale;
-
-        if(!bIsReloading)
+        if (!WeaponDefinition.AuxiliaryWeaponModule.CanActivateModule())  //If I have bullets
         {
-            if (Input.GetButton(FireInputAxis) && ElapsedFireCooldown >= WeaponDefinition.FireCooldown && remainingBullets > 0)
+            if (WeaponDefinition.PrimaryWeaponModule.CanActivateModule()) //If cooldown has passed
             {
-                Shoot();
+                if (Input.GetButtonDown(FireInputAxis) || Input.GetButton(FireInputAxis)) //if player press fire input
+                {
+                    WeaponDefinition.PrimaryWeaponModule.ActivateModule(); //fire
+                }
             }
 
-            if (Input.GetButtonDown(ReloadInputAxis) || remainingBullets <= 0)
+            if (Input.GetButton(ReloadInputAxis)) //if player press reload input
             {
-                bIsReloading = true;
-                //Invoke Delegates
-                OnReloadStateChanged?.Invoke(bIsReloading);
+                WeaponDefinition.AuxiliaryWeaponModule.ActivateModule(); //force reload
             }
-        }  
-        else if(ElapsedReloadTime >= WeaponDefinition.ReloadTime)
-        {
-            ReloadWeapon();
         }
-        else
+        else //if I have no bullets
         {
-            //WeaponDefinition only want to update this cooldown if we are reloading the weapon
-            ElapsedReloadTime += Time.deltaTime * Time.timeScale;
+            WeaponDefinition.AuxiliaryWeaponModule.ActivateModule(); //Reload
         }
-    }
-
-    void ReloadWeapon()
-    {
-        //Reset weapon state
-        remainingBullets = WeaponDefinition.ClipSize;
-        ElapsedFireCooldown = WeaponDefinition.FireCooldown;
-        //Reset Reload control vars
-        bIsReloading = false;
-        ElapsedReloadTime = 0;
-        //Invoke Delegates
-        OnReloadStateChanged?.Invoke(bIsReloading);
-
-    }
-
-    void Shoot()
-    {
-        SetUpProjectile();
-        //Update ammo info
-        remainingBullets -= 1;
-        //Reset shooting control vars
-        ElapsedFireCooldown = 0;
     }
 
     void SetUpProjectile()
@@ -98,7 +63,41 @@ public class FireWeaponComponent : MonoBehaviour
 
     public void ChangeWeaponData(FireWeaponDefinition fireWeaponDefinition)
     {
+        RemoveBindedData();
         WeaponDefinition = fireWeaponDefinition;
-        ReloadWeapon();
+        SetUpWeaponModules();
+    }
+
+    private void SetUpWeaponModules()
+    {
+        WeaponDefinition.PrimaryWeaponModule.SetUpWeaponModule(WeaponDefinition);
+        WeaponDefinition.AuxiliaryWeaponModule.SetUpWeaponModule(WeaponDefinition);
+
+        WeaponDefinition.PrimaryWeaponModule.OnModuleActivate += SetUpProjectile;
+
+        ReloadWeaponModule ReloadModule = WeaponDefinition.AuxiliaryWeaponModule as ReloadWeaponModule;
+        WeaponDefinition.PrimaryWeaponModule.OnModuleActivate += ReloadModule.RemoveBullet;
+        ReloadModule.OnModuleActivate += OnAuxiliaryModuleActive;
+        ReloadModule.OnModuleDeactivate += OnAuxiliaryModuleDeactivated;
+    }
+
+    private void RemoveBindedData()
+    {
+        WeaponDefinition.PrimaryWeaponModule.OnModuleActivate -= SetUpProjectile;
+
+        ReloadWeaponModule ReloadModule = WeaponDefinition.AuxiliaryWeaponModule as ReloadWeaponModule;
+        WeaponDefinition.PrimaryWeaponModule.OnModuleActivate -= ReloadModule.RemoveBullet;
+        ReloadModule.OnModuleActivate -= OnAuxiliaryModuleActive;
+        ReloadModule.OnModuleDeactivate -= OnAuxiliaryModuleDeactivated;
+    }
+
+    private void OnAuxiliaryModuleActive()
+    {
+        OnReloadStateChanged?.Invoke(true);
+    }
+
+    private void OnAuxiliaryModuleDeactivated()
+    {
+        OnReloadStateChanged?.Invoke(false);
     }
 }
